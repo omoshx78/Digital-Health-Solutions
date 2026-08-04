@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: clinicore
+      POSTGRES_PASSWORD: clinicore
+      POSTGRES_DB: clinicore
+    ports:
+      - "5432:5432"
+    volumes:
+      - clinicore_pgdata:/var/lib/postgresql/data
+
+volumes:
+  clinicore_pgdata:
