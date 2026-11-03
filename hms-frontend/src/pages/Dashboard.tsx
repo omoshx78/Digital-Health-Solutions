@@ -12,6 +12,8 @@ const DEPARTMENTS = [
   { key: "PHARMACY", label: "Pharmacy", to: "/pharmacy" },
   { key: "CASHIER", label: "Cashier", to: "/cashier" },
   { key: "WARD", label: "Ward referrals", to: "/wards" },
+  { key: "RADIOLOGY", label: "Radiology", to: "/radiology" },
+  { key: "RECEPTION", label: "Payment clearance", to: "/clearance" },
 ];
 
 export default function Dashboard() {
@@ -20,6 +22,7 @@ export default function Dashboard() {
   const [lowStock, setLowStock] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>(null);
+  const [radiology, setRadiology] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,6 +32,7 @@ export default function Dashboard() {
         api.get("/inventory?lowStock=true"),
         api.get(`/theatre/bookings?date=${new Date().toISOString().slice(0, 10)}`),
         user?.role === "CASHIER" || user?.role === "ADMIN" ? api.get("/reports/summary?period=today") : Promise.resolve(null),
+        user?.role === "CASHIER" || user?.role === "ADMIN" || user?.role === "RADIOLOGIST" ? api.get("/reports/radiology?period=today") : Promise.resolve(null),
       ]);
 
       const nextCounts: Record<string, number> = {};
@@ -47,6 +51,9 @@ export default function Dashboard() {
       const summaryResult = results[DEPARTMENTS.length + 2];
       setSummary(summaryResult.status === "fulfilled" ? summaryResult.value : null);
 
+      const radiologyResult = results[DEPARTMENTS.length + 3];
+      setRadiology(radiologyResult.status === "fulfilled" ? radiologyResult.value : null);
+
       setLoading(false);
     })();
   }, [user]);
@@ -57,7 +64,7 @@ export default function Dashboard() {
     <div>
       <SectionHeader title="Dashboard" subtitle="Live overview of patient flow, stock, and bookings" />
 
-      <div className="grid grid-cols-6 gap-3 mb-6">
+      <div className="grid grid-cols-4 gap-3 mb-6">
         {DEPARTMENTS.map((d) => (
           <Link key={d.key} to={d.to}>
             <Card className="!p-4 hover:border-dhs-400 transition">
@@ -85,6 +92,28 @@ export default function Dashboard() {
           <Card className="!p-4">
             <p className="text-xs text-slate-500">Net</p>
             <p className={`text-xl font-semibold mt-1 ${summary.net < 0 ? "text-rose-600" : "text-emerald-700"}`}>{money(summary.net)}</p>
+          </Card>
+        </div>
+      )}
+
+      {radiology && (
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          <Card className="!p-4">
+            <p className="text-xs text-slate-500">Radiology exams today</p>
+            <p className="text-xl font-semibold mt-1">{radiology.examsPerformed}</p>
+            <p className="text-xs text-slate-400">{radiology.patientsServed} patient{radiology.patientsServed === 1 ? "" : "s"}</p>
+          </Card>
+          <Card className="!p-4">
+            <p className="text-xs text-slate-500">Radiology billed today</p>
+            <p className="text-xl font-semibold mt-1">{money(radiology.billed)}</p>
+          </Card>
+          <Card className="!p-4">
+            <p className="text-xs text-slate-500">Exams waiting / in progress</p>
+            <p className="text-xl font-semibold mt-1">{radiology.pendingExams}</p>
+          </Card>
+          <Card className="!p-4">
+            <p className="text-xs text-slate-500">Awaiting payment clearance</p>
+            <p className="text-xl font-semibold mt-1 text-amber-700">{radiology.awaitingClearance}</p>
           </Card>
         </div>
       )}

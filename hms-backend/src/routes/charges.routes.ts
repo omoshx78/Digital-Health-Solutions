@@ -29,7 +29,7 @@ router.get("/", requireAuth, async (req: AuthedRequest, res) => {
 });
 
 const createSchema = z.object({
-  category: z.enum(["Consultation", "Laboratory", "Other"]),
+  category: z.enum(["Consultation", "Laboratory", "Radiology", "Other"]),
   name: z.string().min(1),
   price: z.number().min(0),
 });

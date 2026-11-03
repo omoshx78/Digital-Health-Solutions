@@ -6,7 +6,7 @@ import { logAction } from "../utils/audit";
 
 const router = Router();
 
-const VALID_DEPARTMENTS = ["TRIAGE", "CONSULTATION", "LABORATORY", "PHARMACY", "CASHIER", "THEATRE", "WARD"];
+const VALID_DEPARTMENTS = ["TRIAGE", "CONSULTATION", "LABORATORY", "PHARMACY", "CASHIER", "THEATRE", "WARD", "RADIOLOGY", "RECEPTION"];
 
 /**
  * GET /queue/:department
@@ -30,7 +30,7 @@ router.get("/:department", requireAuth, async (req: AuthedRequest, res) => {
           include: {
             patient: true,
             triage: true,
-            labOrders: true,
+            labOrders: true, radiologyOrders: true,
             consultations: true,
             prescriptions: { include: { item: true } },
             billingItems: true,
@@ -47,7 +47,7 @@ router.get("/:department", requireAuth, async (req: AuthedRequest, res) => {
           include: {
             patient: true,
             triage: true,
-            labOrders: true,
+            labOrders: true, radiologyOrders: true,
             consultations: true,
             prescriptions: { include: { item: true } },
             billingItems: true,
@@ -87,7 +87,7 @@ router.post("/:id/claim", requireAuth, async (req: AuthedRequest, res) => {
     where: { id },
     include: {
       encounter: {
-        include: { patient: true, triage: true, labOrders: true, consultations: true, prescriptions: { include: { item: true } }, billingItems: true, notes: { orderBy: { createdAt: "asc" } } },
+        include: { patient: true, triage: true, labOrders: true, radiologyOrders: true, consultations: true, prescriptions: { include: { item: true } }, billingItems: true, notes: { orderBy: { createdAt: "asc" } } },
       },
     },
   });

@@ -14,6 +14,7 @@ export default function Reports() {
   const [collections, setCollections] = useState<any>(null);
   const [claims, setClaims] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
+  const [radiology, setRadiology] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [form, setForm] = useState({ date: new Date().toISOString().slice(0, 10), category: EXPENSE_CATEGORIES[0], amount: "", vendor: "" });
@@ -21,16 +22,18 @@ export default function Reports() {
 
   const load = useCallback(async () => {
     try {
-      const [s, c, cl, e] = await Promise.all([
+      const [s, c, cl, e, rad] = await Promise.all([
         api.get(`/reports/summary?period=${period}`),
         api.get(`/reports/collections?period=${period}`),
         api.get(`/reports/claims`),
         api.get(`/reports/expenses?period=${period}`),
+        api.get(`/reports/radiology?period=${period}`).catch(() => null),
       ]);
       setSummary(s);
       setCollections(c);
       setClaims(cl.claims);
       setExpenses(e.expenses);
+      setRadiology(rad);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not load reports");
     }
@@ -291,6 +294,56 @@ export default function Reports() {
                 </li>
               ))}
             </ul>
+          )}
+        </Card>
+      )}
+
+      {radiology && (
+        <Card className="mb-4">
+          <p className="font-medium text-sm mb-1">Radiology (referred patients)</p>
+          <p className="text-xs text-slate-500 mb-3">"Billed" is what was charged when the radiologist completed the exam. Money actually collected appears under Revenue by department → Radiology.</p>
+          <div className="grid grid-cols-6 gap-3 mb-4">
+            {[
+              ["Exams performed", String(radiology.examsPerformed)],
+              ["Patients served", String(radiology.patientsServed)],
+              ["Billed", money(radiology.billed)],
+              ["Avg. turnaround", radiology.avgTurnaroundMinutes === null ? "—" : `${radiology.avgTurnaroundMinutes} min`],
+              ["Exams waiting", String(radiology.pendingExams)],
+              ["Awaiting payment", String(radiology.awaitingClearance)],
+            ].map(([label, value]) => (
+              <div key={label} className="bg-slate-50 rounded-lg px-3 py-2">
+                <p className="text-xs text-slate-500">{label}</p>
+                <p className="text-base font-semibold mt-0.5">{value}</p>
+              </div>
+            ))}
+          </div>
+          {radiology.examsPerformed === 0 ? (
+            <p className="text-sm text-slate-400">No radiology exams completed in this period.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-5">
+              <div>
+                <p className="text-xs font-medium text-slate-600 mb-1.5">By examination</p>
+                <table className="w-full text-sm">
+                  <thead><tr className="text-left text-slate-500 border-b border-slate-200"><th className="py-1 font-normal">Exam</th><th className="font-normal text-right">Count</th><th className="font-normal text-right">Billed</th></tr></thead>
+                  <tbody>
+                    {radiology.byExam.map((x: any) => (
+                      <tr key={x.name} className="border-b border-slate-100 last:border-0"><td className="py-1.5">{x.name}</td><td className="text-right">{x.count}</td><td className="text-right">{money(x.billed)}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-slate-600 mb-1.5">By referring facility</p>
+                <table className="w-full text-sm">
+                  <thead><tr className="text-left text-slate-500 border-b border-slate-200"><th className="py-1 font-normal">Facility</th><th className="font-normal text-right">Patients</th><th className="font-normal text-right">Exams</th><th className="font-normal text-right">Billed</th></tr></thead>
+                  <tbody>
+                    {radiology.byFacility.map((x: any) => (
+                      <tr key={x.name} className="border-b border-slate-100 last:border-0"><td className="py-1.5">{x.name}</td><td className="text-right">{x.patients}</td><td className="text-right">{x.exams}</td><td className="text-right">{money(x.billed)}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
         </Card>
       )}

@@ -5,7 +5,7 @@ import { api, ApiError } from "../api/client";
 import { Card, SectionHeader, Badge, ErrorBanner, money } from "../components/ui";
 import { ChargeCatalogItem } from "../types";
 
-const CATEGORIES = ["Consultation", "Laboratory", "Other"] as const;
+const CATEGORIES = ["Consultation", "Laboratory", "Radiology", "Other"] as const;
 
 export default function Pricing() {
   const [items, setItems] = useState<ChargeCatalogItem[]>([]);
@@ -69,7 +69,7 @@ export default function Pricing() {
     <div>
       <SectionHeader
         title="Pricing"
-        subtitle="Adjust existing charges or add new lab tests / fees"
+        subtitle="Adjust existing charges or add new lab tests, radiology exams and fees"
         action={
           <div className="flex gap-2">
             <Link to="/print/pricing" target="_blank" className="border border-slate-300 text-slate-700 rounded-lg py-2 px-4 text-sm font-medium hover:bg-slate-50 inline-flex items-center gap-1.5"><Printer size={15} /> Print price list</Link>

@@ -12,9 +12,11 @@ interface QueueBoardProps {
   renderAction: (entry: QueueEntry, onDone: () => void) => ReactNode;
   /** Poll interval in ms; defaults to 5s so multiple staff stay roughly in sync. */
   pollMs?: number;
+  /** One-line detail under each waiting patient's MRN. Defaults to the chief complaint. */
+  waitingDetail?: (entry: QueueEntry) => string;
 }
 
-export function QueueBoard({ department, title, subtitle, renderAction, pollMs = 5000 }: QueueBoardProps) {
+export function QueueBoard({ department, title, subtitle, renderAction, pollMs = 5000, waitingDetail }: QueueBoardProps) {
   const [waiting, setWaiting] = useState<QueueEntry[]>([]);
   const [mine, setMine] = useState<QueueEntry[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -116,7 +118,7 @@ export function QueueBoard({ department, title, subtitle, renderAction, pollMs =
                     <p className="font-medium text-sm">{e.encounter.patient?.firstName} {e.encounter.patient?.lastName}</p>
                     <Badge className={PRIORITY_COLORS[e.priority]}>{e.priority}</Badge>
                   </div>
-                  <p className="text-xs text-slate-500 mb-1.5">{e.encounter.patient?.mrn} · {e.encounter.chiefComplaint || "No complaint noted"}</p>
+                  <p className="text-xs text-slate-500 mb-1.5">{e.encounter.patient?.mrn} · {waitingDetail ? waitingDetail(e) : e.encounter.chiefComplaint || "No complaint noted"}</p>
                   <button
                     onClick={() => claim(e.id)}
                     disabled={busyId === e.id}

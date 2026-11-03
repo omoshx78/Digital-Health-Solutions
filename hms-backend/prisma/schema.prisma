@@ -22,6 +22,7 @@ enum Role {
   CASHIER
   WARD_NURSE
   THEATRE_NURSE
+  RADIOLOGIST
 }
 
 enum Gender {
@@ -34,6 +35,7 @@ enum EncounterType {
   OUTPATIENT
   INPATIENT
   EMERGENCY
+  RADIOLOGY_REFERRAL // patient referred from another clinic for imaging only
 }
 
 enum EncounterStatus {
@@ -45,6 +47,8 @@ enum EncounterStatus {
   CASHIER
   AWAITING_ADMISSION
   AWAITING_THEATRE
+  RADIOLOGY
+  PAYMENT_CLEARANCE // radiology done, waiting at reception to settle the bill
   ADMITTED
   DISCHARGED
   CANCELLED
@@ -60,6 +64,8 @@ enum Department {
   CASHIER
   THEATRE
   WARD
+  RADIOLOGY
+  RECEPTION // payment clearance after radiology
 }
 
 enum QueueStatus {
@@ -95,6 +101,11 @@ enum BedStatus {
 }
 
 enum LabOrderStatus {
+  PENDING
+  COMPLETED
+}
+
+enum RadiologyOrderStatus {
   PENDING
   COMPLETED
 }
@@ -152,10 +163,14 @@ model Encounter {
   dischargedAt    DateTime?
   selfRegistered  Boolean          @default(false)
   consentGivenAt  DateTime?
+  // Only set for RADIOLOGY_REFERRAL visits
+  referringFacility  String?
+  referringClinician String?
 
   triage         TriageRecord?
   consultations  Consultation[]
   labOrders      LabOrder[]
+  radiologyOrders RadiologyOrder[]
   prescriptions  Prescription[]
   billingItems   BillingItem[]
   payment        Payment?
@@ -228,6 +243,26 @@ model LabOrder {
   resultedById String?
   orderedAt   DateTime       @default(now())
   resultedAt  DateTime?
+}
+
+// One row per imaging exam requested for a referred patient. The price is
+// copied from the Radiology price list when the referral is registered.
+model RadiologyOrder {
+  id            String                @id @default(cuid())
+  encounter     Encounter             @relation(fields: [encounterId], references: [id])
+  encounterId   String
+  examName      String
+  price         Decimal               @db.Decimal(10, 2)
+  status        RadiologyOrderStatus  @default(PENDING)
+  findings      String?
+  impression    String?
+  orderedById   String?
+  performedById String?
+  orderedAt     DateTime              @default(now())
+  completedAt   DateTime?
+
+  @@index([encounterId])
+  @@index([status, completedAt])
 }
 
 // ---------------- Pharmacy & stock ----------------
@@ -446,7 +481,7 @@ model EncounterNote {
 model ChargeCatalogItem {
   id        String   @id @default(cuid())
   code      String?  @unique
-  category  String   // "Consultation" | "Laboratory" | "Other"
+  category  String   // "Consultation" | "Laboratory" | "Radiology" | "Other"
   name      String
   price     Decimal  @db.Decimal(10, 2)
   active    Boolean  @default(true)

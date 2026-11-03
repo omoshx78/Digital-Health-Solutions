@@ -1,7 +1,7 @@
 import { NavLink, Outlet, Link } from "react-router-dom";
 import {
   LayoutDashboard, UserPlus, Activity, Stethoscope, FlaskConical, Pill,
-  Wallet, CalendarClock, Boxes, BedDouble, BarChart3, LogOut, Users, KeyRound, ShieldCheck, Tag, ShieldAlert,
+  Wallet, CalendarClock, Boxes, BedDouble, BarChart3, LogOut, Users, KeyRound, ShieldCheck, Tag, ShieldAlert, ScanLine, Receipt,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { Role } from "../types";
@@ -17,6 +17,7 @@ const NAV: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, roles: "all" },
   { to: "/patients", label: "Patients", icon: Users, roles: ["RECEPTIONIST", "DOCTOR", "CASHIER", "ADMIN"] },
   { to: "/reception", label: "Reception", icon: UserPlus, roles: ["RECEPTIONIST", "ADMIN"] },
+  { to: "/clearance", label: "Payment clearance", icon: Receipt, roles: ["RECEPTIONIST", "CASHIER", "ADMIN"] },
   { to: "/triage", label: "Triage", icon: Activity, roles: ["NURSE", "ADMIN"] },
   { to: "/consultation", label: "Consultation", icon: Stethoscope, roles: ["DOCTOR", "ADMIN"] },
   { to: "/laboratory", label: "Laboratory", icon: FlaskConical, roles: ["LAB_TECH", "ADMIN"] },
@@ -24,6 +25,7 @@ const NAV: NavItem[] = [
   { to: "/cashier", label: "Cashier", icon: Wallet, roles: ["CASHIER", "ADMIN"] },
   { to: "/reports", label: "Reports", icon: BarChart3, roles: ["CASHIER", "ADMIN"] },
   { to: "/theatre", label: "Theatre & equipment", icon: CalendarClock, roles: ["DOCTOR", "NURSE", "WARD_NURSE", "THEATRE_NURSE", "ADMIN"] },
+  { to: "/radiology", label: "Radiology", icon: ScanLine, roles: ["RADIOLOGIST", "ADMIN"] },
   { to: "/wards", label: "Wards", icon: BedDouble, roles: ["DOCTOR", "NURSE", "WARD_NURSE", "ADMIN"] },
   { to: "/inventory", label: "Inventory", icon: Boxes, roles: ["PHARMACIST", "ADMIN"] },
   { to: "/staff", label: "Staff", icon: ShieldCheck, roles: ["ADMIN"] },

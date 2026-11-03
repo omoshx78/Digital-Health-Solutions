@@ -15,6 +15,8 @@ import Pharmacy from "./pages/Pharmacy";
 import Cashier from "./pages/Cashier";
 import Reports from "./pages/Reports";
 import Theatre from "./pages/Theatre";
+import Radiology from "./pages/Radiology";
+import PaymentClearance from "./pages/PaymentClearance";
 import Wards from "./pages/Wards";
 import Inventory from "./pages/Inventory";
 import Staff from "./pages/Staff";
@@ -196,6 +198,22 @@ export default function App() {
           element={
             <Guard roles={["DOCTOR", "NURSE", "WARD_NURSE", "THEATRE_NURSE"]}>
               <Theatre />
+            </Guard>
+          }
+        />
+        <Route
+          path="/radiology"
+          element={
+            <Guard roles={["RADIOLOGIST"]}>
+              <Radiology />
+            </Guard>
+          }
+        />
+        <Route
+          path="/clearance"
+          element={
+            <Guard roles={["RECEPTIONIST", "CASHIER"]}>
+              <PaymentClearance />
             </Guard>
           }
         />

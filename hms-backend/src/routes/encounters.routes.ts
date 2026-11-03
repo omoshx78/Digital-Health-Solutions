@@ -36,6 +36,7 @@ router.get("/:id", requireAuth, async (req, res) => {
       triage: true,
       consultations: { orderBy: { createdAt: "asc" } },
       labOrders: true,
+      radiologyOrders: true,
       prescriptions: { include: { item: true } },
       billingItems: true,
       payment: { include: { installments: { orderBy: { recordedAt: "asc" } } } },
@@ -81,6 +82,7 @@ const ROLE_DEPARTMENT_LABEL: Record<string, string> = {
   CASHIER: "Cashier",
   WARD_NURSE: "Ward",
   THEATRE_NURSE: "Theatre",
+  RADIOLOGIST: "Radiology",
   RECEPTIONIST: "Reception",
   ADMIN: "Admin",
 };

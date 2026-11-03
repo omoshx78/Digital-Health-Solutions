@@ -176,6 +176,7 @@ router.get("/:id", requireAuth, async (req, res) => {
           triage: true,
           consultations: true,
           labOrders: true,
+          radiologyOrders: true,
           prescriptions: { include: { item: true } },
           billingItems: true,
           payment: { include: { installments: { orderBy: { recordedAt: "asc" } } } },

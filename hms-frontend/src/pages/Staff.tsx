@@ -15,7 +15,7 @@ interface StaffUser {
   lastLoginAt?: string | null;
 }
 
-const STAFF_ROLES: Role[] = ["RECEPTIONIST", "NURSE", "DOCTOR", "LAB_TECH", "PHARMACIST", "CASHIER", "WARD_NURSE", "THEATRE_NURSE"];
+const STAFF_ROLES: Role[] = ["RECEPTIONIST", "NURSE", "DOCTOR", "LAB_TECH", "PHARMACIST", "CASHIER", "WARD_NURSE", "THEATRE_NURSE", "RADIOLOGIST"];
 // New staff accounts can never be created as Admin from this form — admin
 // rights should only ever be granted deliberately, by promoting an
 // existing account via the role dropdown below (which requires a

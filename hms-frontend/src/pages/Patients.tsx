@@ -15,6 +15,8 @@ const STATUS_COLORS: Record<string, string> = {
   CASHIER: "bg-orange-100 text-orange-800 border-orange-300",
   AWAITING_ADMISSION: "bg-indigo-100 text-indigo-800 border-indigo-300",
   AWAITING_THEATRE: "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300",
+  RADIOLOGY: "bg-cyan-100 text-cyan-800 border-cyan-300",
+  PAYMENT_CLEARANCE: "bg-orange-100 text-orange-800 border-orange-300",
   ADMITTED: "bg-indigo-100 text-indigo-800 border-indigo-300",
   DISCHARGED: "bg-emerald-100 text-emerald-800 border-emerald-300",
   CANCELLED: "bg-slate-200 text-slate-500 border-slate-300",
@@ -135,6 +137,12 @@ export default function Patients() {
                         <p key={c.id} className="text-xs text-slate-500 mb-1"><span className="font-medium">Doctor:</span> {c.diagnosis ? `${c.diagnosis} — ` : ""}{c.notes || ""}</p>
                       )
                     ))}
+                    {enc.referringFacility && (
+                      <p className="text-xs text-slate-500 mb-1"><span className="font-medium">Referred by:</span> {enc.referringFacility}{enc.referringClinician ? ` (${enc.referringClinician})` : ""}</p>
+                    )}
+                    {(enc.radiologyOrders || []).map((o: any) => (
+                      <p key={o.id} className="text-xs text-slate-500 mb-1"><span className="font-medium">Radiology — {o.examName}:</span> {o.status === "COMPLETED" ? `${o.findings || ""}${o.impression ? ` Impression: ${o.impression}` : ""}` : "Pending"}</p>
+                    ))}
                     {(enc.notes || []).length > 0 && (
                       <div className="mt-1.5 mb-1 space-y-1">
                         {enc.notes.map((n: any) => (
@@ -187,6 +195,11 @@ export default function Patients() {
                       {(enc.bookings || []).length > 0 && (
                         <Link to={`/print/${enc.id}?type=theatre`} target="_blank" className="text-xs text-dhs-700 hover:underline inline-flex items-center gap-1">
                           <Printer size={12} /> Theatre record
+                        </Link>
+                      )}
+                      {(enc.radiologyOrders || []).some((o: any) => o.status === "COMPLETED") && (
+                        <Link to={`/print/${enc.id}?type=radiology`} target="_blank" className="text-xs text-dhs-700 hover:underline inline-flex items-center gap-1">
+                          <Printer size={12} /> Radiology report
                         </Link>
                       )}
                     </div>

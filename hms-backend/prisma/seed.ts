@@ -122,6 +122,24 @@ async function main() {
     if (!existing) await prisma.chargeCatalogItem.create({ data: { category: "Laboratory", name: t.name, price: t.price } });
   }
 
+  // Radiology exams for patients referred from other clinics. These prices
+  // are starting points only — set the real ones on the Pricing page.
+  const radiologyExams = [
+    { name: "Chest X-Ray", price: 1500 },
+    { name: "Limb / Extremity X-Ray", price: 1500 },
+    { name: "Spine X-Ray", price: 2000 },
+    { name: "Abdominal Ultrasound", price: 2000 },
+    { name: "Pelvic Ultrasound", price: 2000 },
+    { name: "Obstetric Ultrasound", price: 2000 },
+    { name: "CT Head", price: 6000 },
+    { name: "CT Chest", price: 8000 },
+    { name: "CT Abdomen / Pelvis", price: 9000 },
+  ];
+  for (const t of radiologyExams) {
+    const existing = await prisma.chargeCatalogItem.findFirst({ where: { category: "Radiology", name: t.name } });
+    if (!existing) await prisma.chargeCatalogItem.create({ data: { category: "Radiology", name: t.name, price: t.price } });
+  }
+
   console.log("Seed complete.");
 }
 

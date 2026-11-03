@@ -4,13 +4,14 @@ import { Printer, ArrowLeft } from "lucide-react";
 import { api, ApiError } from "../api/client";
 import { money } from "../components/ui";
 
-type DocType = "summary" | "receipt" | "discharge" | "theatre";
+type DocType = "summary" | "receipt" | "discharge" | "theatre" | "radiology";
 
 const DOC_TITLES: Record<DocType, string> = {
   summary: "Medical Report",
   receipt: "Payment Receipt",
   discharge: "Discharge Summary",
   theatre: "Theatre Record",
+  radiology: "Radiology Report",
 };
 
 export default function PrintView() {
@@ -48,8 +49,8 @@ export default function PrintView() {
       `}</style>
 
       <div className="no-print sticky top-0 bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between">
-        <Link to="/patients" className="text-sm text-slate-500 hover:text-slate-800 inline-flex items-center gap-1.5">
-          <ArrowLeft size={15} /> Back to Patients
+        <Link to={type === "radiology" ? "/" : "/patients"} className="text-sm text-slate-500 hover:text-slate-800 inline-flex items-center gap-1.5">
+          <ArrowLeft size={15} /> {type === "radiology" ? "Back" : "Back to Patients"}
         </Link>
         <button onClick={() => window.print()} className="bg-dhs-800 text-white rounded-lg py-2 px-4 text-sm font-medium hover:bg-dhs-900 inline-flex items-center gap-1.5">
           <Printer size={15} /> Print / Save as PDF
@@ -104,6 +105,14 @@ export default function PrintView() {
                     {c.diagnosis && <p className="text-slate-700"><span className="font-medium">Diagnosis:</span> {c.diagnosis}</p>}
                     {c.notes && <p className="text-slate-600">{c.notes}</p>}
                   </div>
+                ))}
+              </Section>
+            )}
+
+            {(encounter.radiologyOrders || []).length > 0 && (
+              <Section title="Radiology">
+                {encounter.radiologyOrders.map((o: any) => (
+                  <p key={o.id} className="text-sm text-slate-700 mb-1"><span className="font-medium">{o.examName}:</span> {o.status === "COMPLETED" ? `${o.findings || ""}${o.impression ? ` — Impression: ${o.impression}` : ""}` : "Pending"}</p>
                 ))}
               </Section>
             )}
@@ -196,6 +205,32 @@ export default function PrintView() {
                   : "Not yet billed"}
               </p>
             </Section>
+          </>
+        )}
+
+        {type === "radiology" && (
+          <>
+            <Section title="Referral">
+              <p className="text-sm text-slate-700"><span className="font-medium">Referred by:</span> {encounter.referringFacility || "Not recorded"}{encounter.referringClinician ? ` — ${encounter.referringClinician}` : ""}</p>
+              {encounter.chiefComplaint && <p className="text-sm text-slate-700 mt-1"><span className="font-medium">Clinical information:</span> {encounter.chiefComplaint}</p>}
+            </Section>
+            {(encounter.radiologyOrders || []).length === 0 ? (
+              <Section title="Examinations"><p className="text-sm text-slate-400">No radiology examinations on this visit.</p></Section>
+            ) : (
+              (encounter.radiologyOrders || []).map((o: any) => (
+                <Section key={o.id} title={o.examName}>
+                  {o.status === "COMPLETED" ? (
+                    <>
+                      <p className="text-xs text-slate-400 mb-1">Reported {o.completedAt ? new Date(o.completedAt).toLocaleString() : ""}</p>
+                      <p className="text-sm text-slate-700 whitespace-pre-wrap"><span className="font-medium">Findings:</span> {o.findings}</p>
+                      {o.impression && <p className="text-sm text-slate-700 mt-1 whitespace-pre-wrap"><span className="font-medium">Impression:</span> {o.impression}</p>}
+                    </>
+                  ) : (
+                    <p className="text-sm text-slate-400">Examination pending — no report yet.</p>
+                  )}
+                </Section>
+              ))
+            )}
           </>
         )}
 

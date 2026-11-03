@@ -13,6 +13,7 @@ import reportRoutes from "./routes/reports.routes";
 import chargesRoutes from "./routes/charges.routes";
 import publicRoutes from "./routes/public.routes";
 import reseedOnceRoutes from "./routes/reseed-once.routes";
+import radiologyRoutes from "./routes/radiology.routes";
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use("/queue", queueRoutes);
 app.use("/inventory", inventoryRoutes);
 app.use("/theatre", theatreRoutes);
 app.use("/wards", wardRoutes);
+app.use("/radiology", radiologyRoutes);
 app.use("/reports", reportRoutes);
 app.use("/charges", chargesRoutes);
 app.use("/public", publicRoutes);

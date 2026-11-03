@@ -269,4 +269,69 @@ router.get("/summary", requireAuth, requireRole("CASHIER"), async (req: AuthedRe
   });
 });
 
+/**
+ * GET /reports/radiology?period=today|month|all
+ * Radiology activity for referred patients: exams performed in the period
+ * (by type and by referring facility), average turnaround from referral to
+ * report, plus live counts of what is still waiting. "Billed" is the value
+ * charged when the radiologist completed the exam; what has actually been
+ * collected shows up under Revenue by department -> Radiology.
+ */
+router.get("/radiology", requireAuth, requireRole("CASHIER", "RADIOLOGIST"), async (req: AuthedRequest, res) => {
+  const range = periodRange(req.query.period as string);
+
+  const [done, pendingExams, awaitingClearance] = await Promise.all([
+    prisma.radiologyOrder.findMany({
+      where: { status: "COMPLETED", completedAt: range ? { gte: range.gte, lt: range.lt } : { not: null } },
+      include: { encounter: { select: { id: true, referringFacility: true } } },
+    }),
+    prisma.radiologyOrder.count({ where: { status: "PENDING", encounter: { status: { not: "CANCELLED" } } } }),
+    prisma.encounter.count({ where: { status: "PAYMENT_CLEARANCE" } }),
+  ]);
+
+  const byExam: Record<string, { count: number; billed: number }> = {};
+  const byFacility: Record<string, { exams: number; billed: number; patients: Set<string> }> = {};
+  let billed = 0;
+  let turnaroundMs = 0;
+  let turnaroundCount = 0;
+  const encounterIds = new Set<string>();
+
+  for (const o of done) {
+    const price = Number(o.price);
+    billed += price;
+    encounterIds.add(o.encounterId);
+
+    const e = (byExam[o.examName] ||= { count: 0, billed: 0 });
+    e.count += 1;
+    e.billed += price;
+
+    const facility = o.encounter.referringFacility || "Not recorded";
+    const f = (byFacility[facility] ||= { exams: 0, billed: 0, patients: new Set() });
+    f.exams += 1;
+    f.billed += price;
+    f.patients.add(o.encounterId);
+
+    if (o.completedAt) {
+      turnaroundMs += o.completedAt.getTime() - o.orderedAt.getTime();
+      turnaroundCount += 1;
+    }
+  }
+
+  res.json({
+    period: req.query.period || "all",
+    examsPerformed: done.length,
+    patientsServed: encounterIds.size,
+    billed,
+    pendingExams,
+    awaitingClearance,
+    avgTurnaroundMinutes: turnaroundCount ? Math.round(turnaroundMs / turnaroundCount / 60000) : null,
+    byExam: Object.entries(byExam)
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => b.count - a.count),
+    byFacility: Object.entries(byFacility)
+      .map(([name, v]) => ({ name, exams: v.exams, billed: v.billed, patients: v.patients.size }))
+      .sort((a, b) => b.exams - a.exams),
+  });
+});
+
 export default router;

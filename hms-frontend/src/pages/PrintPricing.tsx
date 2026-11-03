@@ -21,7 +21,7 @@ export default function PrintPricing() {
 
   return (
     <PrintShell title="Price List" subtitle="Active charges" backTo="/pricing" backLabel="Back to Pricing">
-      {["Consultation", "Laboratory", "Other"].map((cat) => {
+      {["Consultation", "Laboratory", "Radiology", "Other"].map((cat) => {
         const catItems = items.filter((i) => i.category === cat);
         if (catItems.length === 0) return null;
         return (

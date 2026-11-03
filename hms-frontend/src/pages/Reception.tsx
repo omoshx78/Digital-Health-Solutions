@@ -4,6 +4,7 @@ import { api, ApiError } from "../api/client";
 import { Card, SectionHeader, ErrorBanner } from "../components/ui";
 import { Patient } from "../types";
 import { PatientPicker } from "../components/PatientPicker";
+import { RadiologyReferral } from "../components/RadiologyReferral";
 
 const emptyForm = {
   firstName: "",
@@ -278,6 +279,8 @@ export default function Reception() {
           )}
         </Card>
       </div>
+
+      <RadiologyReferral />
     </div>
   );
 }

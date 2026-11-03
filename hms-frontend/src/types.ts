@@ -1,4 +1,4 @@
-export type Role = "ADMIN" | "RECEPTIONIST" | "NURSE" | "DOCTOR" | "LAB_TECH" | "PHARMACIST" | "CASHIER" | "WARD_NURSE" | "THEATRE_NURSE";
+export type Role = "ADMIN" | "RECEPTIONIST" | "NURSE" | "DOCTOR" | "LAB_TECH" | "PHARMACIST" | "CASHIER" | "WARD_NURSE" | "THEATRE_NURSE" | "RADIOLOGIST";
 
 export interface User {
   id: string;
@@ -9,7 +9,7 @@ export interface User {
 export interface ChargeCatalogItem {
   id: string;
   code?: string | null;
-  category: "Consultation" | "Laboratory" | "Other";
+  category: "Consultation" | "Laboratory" | "Radiology" | "Other";
   name: string;
   price: string;
   active: boolean;
@@ -44,6 +44,16 @@ export interface LabOrder {
   price: string;
   status: "PENDING" | "COMPLETED";
   result?: string;
+}
+
+export interface RadiologyOrder {
+  id: string;
+  examName: string;
+  price: string;
+  status: "PENDING" | "COMPLETED";
+  findings?: string;
+  impression?: string;
+  completedAt?: string;
 }
 
 export interface Prescription {
@@ -81,7 +91,11 @@ export interface Encounter {
   id: string;
   patientId: string;
   status: string;
+  type?: string;
   chiefComplaint?: string;
+  referringFacility?: string;
+  referringClinician?: string;
+  radiologyOrders?: RadiologyOrder[];
   patient?: Patient;
   triage?: TriageRecord;
   consultations?: ConsultationRecord[];

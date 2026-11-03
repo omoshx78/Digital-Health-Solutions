@@ -43,7 +43,7 @@ const createUserSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  role: z.enum(["ADMIN", "RECEPTIONIST", "NURSE", "DOCTOR", "LAB_TECH", "PHARMACIST", "CASHIER", "WARD_NURSE", "THEATRE_NURSE"]),
+  role: z.enum(["ADMIN", "RECEPTIONIST", "NURSE", "DOCTOR", "LAB_TECH", "PHARMACIST", "CASHIER", "WARD_NURSE", "THEATRE_NURSE", "RADIOLOGIST"]),
 });
 
 // Only an existing admin can create staff accounts — run the seed script
@@ -85,7 +85,7 @@ router.get("/users", requireAuth, requireRole("ADMIN"), async (_req, res) => {
 
 const updateUserSchema = z.object({
   name: z.string().min(1).optional(),
-  role: z.enum(["ADMIN", "RECEPTIONIST", "NURSE", "DOCTOR", "LAB_TECH", "PHARMACIST", "CASHIER", "WARD_NURSE", "THEATRE_NURSE"]).optional(),
+  role: z.enum(["ADMIN", "RECEPTIONIST", "NURSE", "DOCTOR", "LAB_TECH", "PHARMACIST", "CASHIER", "WARD_NURSE", "THEATRE_NURSE", "RADIOLOGIST"]).optional(),
   active: z.boolean().optional(),
 });
 
