@@ -5,8 +5,7 @@ declare global {
   var __prisma: PrismaClient | undefined;
 }
 
+// Reuse one client per runtime instance (also in production: on Vercel each
+// warm function instance keeps one client instead of opening new connections).
 export const prisma = global.__prisma ?? new PrismaClient();
-
-if (process.env.NODE_ENV !== "production") {
-  global.__prisma = prisma;
-}
+global.__prisma = prisma;

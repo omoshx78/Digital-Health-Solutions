@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 
 const prisma = new PrismaClient();
 
@@ -8,19 +9,26 @@ async function main() {
   // 1. Sequence for human-readable Medical Record Numbers.
   await prisma.$executeRawUnsafe(`CREATE SEQUENCE IF NOT EXISTS mrn_seq START 1001;`);
 
-  // 2. First admin account — CHANGE THIS PASSWORD after first login.
-  const adminEmail = "admin@clinicore.local";
+  // 2. First admin account. Set ADMIN_EMAIL / ADMIN_PASSWORD (and optionally
+  // ADMIN_NAME) in the environment before running the seed. If no password is
+  // given, a random one is generated and printed once — never a known default.
+  const adminEmail = (process.env.ADMIN_EMAIL || "admin@clinicore.local").trim();
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
   if (!existingAdmin) {
+    const generated = !process.env.ADMIN_PASSWORD;
+    const password = process.env.ADMIN_PASSWORD || randomBytes(12).toString("base64url");
     await prisma.user.create({
       data: {
-        name: "System Administrator",
+        name: process.env.ADMIN_NAME || "System Administrator",
         email: adminEmail,
-        passwordHash: await bcrypt.hash("ChangeMe123!", 12),
+        passwordHash: await bcrypt.hash(password, 12),
         role: "ADMIN",
       },
     });
-    console.log(`Created admin user: ${adminEmail} / ChangeMe123! — change this immediately.`);
+    console.log(`Created admin user: ${adminEmail}`);
+    if (generated) console.log(`Generated password (shown once, change it after first login): ${password}`);
+  } else {
+    console.log(`Admin ${adminEmail} already exists — left unchanged.`);
   }
 
   // 3. Starter inventory (KES pricing)

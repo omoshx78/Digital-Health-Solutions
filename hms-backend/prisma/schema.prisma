@@ -1,13 +1,18 @@
 // Digital Health Solutions (DHS) — core database schema
-// Run: npx prisma migrate dev --name init
+// Apply to a new database: npm run db:migrate:deploy
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // rhel-openssl-3.0.x is the runtime Vercel (AWS Lambda) uses.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // DATABASE_URL: Supabase *pooled* string (port 6543) with ?pgbouncer=true&connection_limit=1
+  // DIRECT_URL:   Supabase *direct/session* string (port 5432), used only by migrations
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ---------------- Enums ----------------
